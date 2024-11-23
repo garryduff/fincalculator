@@ -53,6 +53,34 @@ def stock_valuation(dividends, growth_rate, required_return):
     stock_value = dividends / (required_return - growth_rate)
     return stock_value
 
+def calculate_portfolio_volatility(weights, volatilities, correlations):
+    """
+    Calculate Portfolio Volatility using correlation matrix
+    weights: List of asset weights
+    volatilities: List of individual asset volatilities
+    correlations: Correlation matrix as a list of lists
+    """
+    n = len(weights)
+    if n != len(volatilities) or n != len(correlations) or any(len(row) != n for row in correlations):
+        raise ValueError("Dimensions mismatch in input parameters")
+    
+    # Convert to numpy arrays
+    weights = np.array(weights)
+    volatilities = np.array(volatilities)
+    correlations = np.array(correlations)
+    
+    # Create covariance matrix
+    cov_matrix = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            cov_matrix[i,j] = correlations[i,j] * volatilities[i] * volatilities[j]
+    
+    # Calculate portfolio variance
+    portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
+    
+    # Return portfolio volatility (standard deviation)
+    return np.sqrt(portfolio_variance)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -96,6 +124,28 @@ def calculate_stock():
             float(data['required_return'])
         )
         return jsonify({'stock_value': round(value, 2) if isinstance(value, float) else value})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_portfolio_volatility', methods=['POST'])
+def portfolio_volatility():
+    data = request.json
+    try:
+        weights = data['weights']
+        volatilities = data['volatilities']
+        correlations = data['correlations']
+        
+        # Convert percentages to decimals
+        weights = [float(w)/100 for w in weights]
+        volatilities = [float(v)/100 for v in volatilities]
+        correlations = [[float(c) for c in row] for row in correlations]
+        
+        # Validate weights sum to 1
+        if abs(sum(weights) - 1.0) > 0.0001:
+            return jsonify({'error': 'Weights must sum to 100%'}), 400
+            
+        portfolio_vol = calculate_portfolio_volatility(weights, volatilities, correlations)
+        return jsonify({'portfolio_volatility': round(portfolio_vol * 100, 2)})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 

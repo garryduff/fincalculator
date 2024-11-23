@@ -23,6 +23,21 @@
             padding: 10px;
             margin-top: 15px;
         }
+        .correlation-matrix {
+            display: grid;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .correlation-matrix input {
+            width: 60px;
+            text-align: center;
+        }
+        .asset-input-group {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -107,6 +122,24 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Calculate Stock Value</button>
                         <div id="stockResult" class="result-box mt-3"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Portfolio Volatility Calculator -->
+            <div class="col-md-6">
+                <div class="calculator-section">
+                    <h3>Portfolio Volatility Calculator</h3>
+                    <form id="portfolioForm">
+                        <div id="assetInputs">
+                            <!-- Asset inputs will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-secondary mb-3" onclick="addAsset()">Add Asset</button>
+                        <div id="correlationMatrix" class="mb-3">
+                            <!-- Correlation matrix will be added here dynamically -->
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate Portfolio Volatility</button>
+                        <div id="portfolioResult" class="result-box mt-3"></div>
                     </form>
                 </div>
             </div>
@@ -208,6 +241,128 @@
                 const data = await response.json();
                 if (data.stock_value) {
                     resultDiv.innerHTML = `Stock Value: $${data.stock_value}`;
+                    resultDiv.classList.remove('text-danger');
+                    resultDiv.classList.add('text-success');
+                } else {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.classList.remove('text-success');
+                    resultDiv.classList.add('text-danger');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.classList.remove('text-success');
+                resultDiv.classList.add('text-danger');
+            }
+        });
+
+        // Portfolio Volatility Calculator
+        let assetCount = 0;
+
+        function addAsset() {
+            const assetInputs = document.getElementById('assetInputs');
+            const newAsset = document.createElement('div');
+            newAsset.className = 'asset-input-group';
+            newAsset.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Asset ${assetCount + 1} Weight (%)</label>
+                        <input type="number" step="0.01" class="form-control asset-weight" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Asset ${assetCount + 1} Volatility (%)</label>
+                        <input type="number" step="0.01" class="form-control asset-volatility" required>
+                    </div>
+                </div>
+            `;
+            assetInputs.appendChild(newAsset);
+            assetCount++;
+            updateCorrelationMatrix();
+        }
+
+        function updateCorrelationMatrix() {
+            const matrix = document.getElementById('correlationMatrix');
+            if (assetCount < 2) {
+                matrix.innerHTML = '';
+                return;
+            }
+
+            let html = '<h5>Correlation Matrix</h5><div class="correlation-matrix" style="grid-template-columns: repeat(' + (assetCount + 1) + ', auto);">';
+            
+            // Header row
+            html += '<div></div>';
+            for (let i = 0; i < assetCount; i++) {
+                html += `<div>Asset ${i + 1}</div>`;
+            }
+
+            // Matrix rows
+            for (let i = 0; i < assetCount; i++) {
+                html += `<div>Asset ${i + 1}</div>`;
+                for (let j = 0; j < assetCount; j++) {
+                    if (i === j) {
+                        html += '<input type="number" value="1" readonly class="form-control correlation-input">';
+                    } else if (i < j) {
+                        html += `<input type="number" step="0.01" min="-1" max="1" class="form-control correlation-input" data-i="${i}" data-j="${j}" oninput="updateSymmetricCell(this)">`;
+                    } else {
+                        html += `<input type="number" step="0.01" min="-1" max="1" class="form-control correlation-input symmetric" data-i="${i}" data-j="${j}" readonly>`;
+                    }
+                }
+            }
+            html += '</div>';
+            matrix.innerHTML = html;
+        }
+
+        function updateSymmetricCell(input) {
+            const i = input.dataset.i;
+            const j = input.dataset.j;
+            const value = input.value;
+            const symmetricInput = document.querySelector(`.correlation-input.symmetric[data-i="${j}"][data-j="${i}"]`);
+            if (symmetricInput) {
+                symmetricInput.value = value;
+            }
+        }
+
+        // Add initial assets
+        addAsset();
+        addAsset();
+
+        document.getElementById('portfolioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('portfolioResult');
+            
+            try {
+                // Collect weights and volatilities
+                const weights = Array.from(document.getElementsByClassName('asset-weight')).map(input => parseFloat(input.value));
+                const volatilities = Array.from(document.getElementsByClassName('asset-volatility')).map(input => parseFloat(input.value));
+                
+                // Collect correlation matrix
+                const correlations = [];
+                for (let i = 0; i < assetCount; i++) {
+                    correlations[i] = [];
+                    for (let j = 0; j < assetCount; j++) {
+                        if (i === j) {
+                            correlations[i][j] = 1;
+                        } else {
+                            const input = document.querySelector(`.correlation-input[data-i="${Math.min(i,j)}"][data-j="${Math.max(i,j)}"]`);
+                            correlations[i][j] = parseFloat(input.value);
+                        }
+                    }
+                }
+
+                const response = await fetch('/calculate_portfolio_volatility', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        weights: weights,
+                        volatilities: volatilities,
+                        correlations: correlations
+                    })
+                });
+
+                const data = await response.json();
+                if (data.portfolio_volatility) {
+                    resultDiv.innerHTML = `Portfolio Volatility: ${data.portfolio_volatility}%`;
                     resultDiv.classList.remove('text-danger');
                     resultDiv.classList.add('text-success');
                 } else {
