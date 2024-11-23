@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calculators</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f4f6f9; 
+            font-family: 'Arial', sans-serif;
+        }
+        .calculator-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .result-box {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Financial Calculators</h1>
+        
+        <div class="row">
+            <!-- Options Calculator -->
+            <div class="col-md-4">
+                <div class="calculator-section">
+                    <h3>Options Calculator</h3>
+                    <form id="optionsForm">
+                        <div class="mb-3">
+                            <label class="form-label">Stock Price</label>
+                            <input type="number" class="form-control" id="stockPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Strike Price</label>
+                            <input type="number" class="form-control" id="strikePrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Time to Maturity (Years)</label>
+                            <input type="number" step="0.1" class="form-control" id="timeToMaturity" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Risk-Free Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="riskFreeRate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Volatility (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="volatility" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate Option Price</button>
+                        <div id="optionsResult" class="result-box mt-3"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bond Calculator -->
+            <div class="col-md-4">
+                <div class="calculator-section">
+                    <h3>Bond Calculator</h3>
+                    <form id="bondForm">
+                        <div class="mb-3">
+                            <label class="form-label">Face Value</label>
+                            <input type="number" class="form-control" id="faceValue" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Coupon Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="couponRate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Years to Maturity</label>
+                            <input type="number" class="form-control" id="yearsToMaturity" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Market Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="marketRate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate Bond Price</button>
+                        <div id="bondResult" class="result-box mt-3"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stock Calculator -->
+            <div class="col-md-4">
+                <div class="calculator-section">
+                    <h3>Stock Calculator</h3>
+                    <form id="stockForm">
+                        <div class="mb-3">
+                            <label class="form-label">Current Dividend</label>
+                            <input type="number" class="form-control" id="dividends" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dividend Growth Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="growthRate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Required Return (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredReturn" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate Stock Value</button>
+                        <div id="stockResult" class="result-box mt-3"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Options Calculator
+        document.getElementById('optionsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('optionsResult');
+            
+            try {
+                const response = await fetch('/calculate_option', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        stock_price: document.getElementById('stockPrice').value,
+                        strike_price: document.getElementById('strikePrice').value,
+                        time_to_maturity: document.getElementById('timeToMaturity').value,
+                        risk_free_rate: document.getElementById('riskFreeRate').value / 100,
+                        volatility: document.getElementById('volatility').value / 100
+                    })
+                });
+
+                const data = await response.json();
+                if (data.option_price) {
+                    resultDiv.innerHTML = `Option Price: $${data.option_price}`;
+                    resultDiv.classList.remove('text-danger');
+                    resultDiv.classList.add('text-success');
+                } else {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.classList.remove('text-success');
+                    resultDiv.classList.add('text-danger');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.classList.remove('text-success');
+                resultDiv.classList.add('text-danger');
+            }
+        });
+
+        // Bond Calculator
+        document.getElementById('bondForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('bondResult');
+            
+            try {
+                const response = await fetch('/calculate_bond', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        face_value: document.getElementById('faceValue').value,
+                        coupon_rate: document.getElementById('couponRate').value / 100,
+                        years_to_maturity: document.getElementById('yearsToMaturity').value,
+                        market_rate: document.getElementById('marketRate').value / 100
+                    })
+                });
+
+                const data = await response.json();
+                if (data.bond_price) {
+                    resultDiv.innerHTML = `Bond Price: $${data.bond_price}`;
+                    resultDiv.classList.remove('text-danger');
+                    resultDiv.classList.add('text-success');
+                } else {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.classList.remove('text-success');
+                    resultDiv.classList.add('text-danger');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.classList.remove('text-success');
+                resultDiv.classList.add('text-danger');
+            }
+        });
+
+        // Stock Calculator
+        document.getElementById('stockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('stockResult');
+            
+            try {
+                const response = await fetch('/calculate_stock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        dividends: document.getElementById('dividends').value,
+                        growth_rate: document.getElementById('growthRate').value / 100,
+                        required_return: document.getElementById('requiredReturn').value / 100
+                    })
+                });
+
+                const data = await response.json();
+                if (data.stock_value) {
+                    resultDiv.innerHTML = `Stock Value: $${data.stock_value}`;
+                    resultDiv.classList.remove('text-danger');
+                    resultDiv.classList.add('text-success');
+                } else {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.classList.remove('text-success');
+                    resultDiv.classList.add('text-danger');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.classList.remove('text-success');
+                resultDiv.classList.add('text-danger');
+            }
+        });
+    </script>
+</body>
+</html>
