@@ -41,106 +41,85 @@
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <h1 class="text-center mb-5">Financial Calculators</h1>
-        
+    <div class="container mt-5">
         <div class="row">
-            <!-- Options Calculator -->
-            <div class="col-md-4">
-                <div class="calculator-section">
-                    <h3>Options Calculator</h3>
-                    <form id="optionsForm">
-                        <div class="mb-3">
-                            <label class="form-label">Stock Price</label>
-                            <input type="number" class="form-control" id="stockPrice" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Strike Price</label>
-                            <input type="number" class="form-control" id="strikePrice" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Time to Maturity (Years)</label>
-                            <input type="number" step="0.1" class="form-control" id="timeToMaturity" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Risk-Free Rate (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="riskFreeRate" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Volatility (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="volatility" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Calculate Option Price</button>
-                        <div id="optionsResult" class="result-box mt-3"></div>
-                    </form>
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 mb-4">Welcome to Financial Calculators</h1>
+                
+                <div class="mb-5">
+                    <h2>Understanding Financial Markets</h2>
+                    <p class="lead">
+                        Financial markets are complex systems where various financial instruments are traded, 
+                        helping businesses raise capital and investors grow wealth. Understanding these markets 
+                        requires knowledge of different financial instruments and their valuation methods.
+                    </p>
                 </div>
-            </div>
 
-            <!-- Bond Calculator -->
-            <div class="col-md-4">
-                <div class="calculator-section">
-                    <h3>Bond Calculator</h3>
-                    <form id="bondForm">
-                        <div class="mb-3">
-                            <label class="form-label">Face Value</label>
-                            <input type="number" class="form-control" id="faceValue" required>
+                <div class="mb-5">
+                    <h3>Key Financial Instruments</h3>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>Stocks</h4>
+                            <p>
+                                Stocks represent ownership in a company. Their value is determined by various factors 
+                                including dividends, growth potential, and market conditions. Our stock calculator uses 
+                                the Dividend Discount Model to estimate intrinsic value.
+                                <br>
+                                <a href="/stocks" class="btn btn-outline-primary mt-2">Stock Calculator →</a>
+                            </p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Coupon Rate (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="couponRate" required>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>Bonds</h4>
+                            <p>
+                                Bonds are debt instruments that provide regular interest payments and return of principal 
+                                at maturity. Their value depends on interest rates, time to maturity, and credit quality.
+                                <br>
+                                <a href="/bonds" class="btn btn-outline-primary mt-2">Bond Calculator →</a>
+                            </p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Years to Maturity</label>
-                            <input type="number" class="form-control" id="yearsToMaturity" required>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>Options</h4>
+                            <p>
+                                Options are derivatives that give the right, but not obligation, to buy or sell an asset 
+                                at a predetermined price. The Black-Scholes model is widely used for option pricing.
+                                <br>
+                                <a href="/options" class="btn btn-outline-primary mt-2">Options Calculator →</a>
+                            </p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Market Interest Rate (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="marketRate" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Calculate Bond Price</button>
-                        <div id="bondResult" class="result-box mt-3"></div>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Stock Calculator -->
-            <div class="col-md-4">
-                <div class="calculator-section">
-                    <h3>Stock Calculator</h3>
-                    <form id="stockForm">
-                        <div class="mb-3">
-                            <label class="form-label">Current Dividend</label>
-                            <input type="number" class="form-control" id="dividends" required>
+                <div class="mb-5">
+                    <h3>Portfolio Management</h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>
+                                Modern Portfolio Theory emphasizes the importance of diversification and understanding 
+                                the relationships between different assets. Portfolio risk depends not only on individual 
+                                asset risks but also on how these assets move together.
+                            </p>
+                            <p>
+                                Our Portfolio Volatility Calculator helps you understand and measure portfolio risk using 
+                                correlation matrices and volatility measures.
+                                <br>
+                                <a href="/portfolio" class="btn btn-outline-primary mt-2">Portfolio Calculator →</a>
+                            </p>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Dividend Growth Rate (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="growthRate" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Required Return (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="requiredReturn" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Calculate Stock Value</button>
-                        <div id="stockResult" class="result-box mt-3"></div>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Portfolio Volatility Calculator -->
-            <div class="col-md-6">
-                <div class="calculator-section">
-                    <h3>Portfolio Volatility Calculator</h3>
-                    <form id="portfolioForm">
-                        <div id="assetInputs">
-                            <!-- Asset inputs will be added here dynamically -->
-                        </div>
-                        <button type="button" class="btn btn-secondary mb-3" onclick="addAsset()">Add Asset</button>
-                        <div id="correlationMatrix" class="mb-3">
-                            <!-- Correlation matrix will be added here dynamically -->
-                        </div>
-                        <button type="submit" class="btn btn-primary">Calculate Portfolio Volatility</button>
-                        <div id="portfolioResult" class="result-box mt-3"></div>
-                    </form>
+                <div class="alert alert-info">
+                    <h4>Getting Started</h4>
+                    <p>
+                        Choose a calculator from the navigation menu or use the links above. Each calculator includes 
+                        detailed instructions and explanations of the underlying financial concepts.
+                    </p>
                 </div>
             </div>
         </div>
