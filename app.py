@@ -32,6 +32,10 @@ def stocks():
 def portfolio():
     return render_template('portfolio.html')
 
+@app.route('/calculus')
+def calculus():
+    return render_template('calculus.html')
+
 def black_scholes_call(S, K, T, r, sigma):
     """
     Calculate Black-Scholes Call Option Price
@@ -321,6 +325,35 @@ def calculate_price_change():
         return jsonify({'price_change': price_change})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_derivative', methods=['POST'])
+def calculate_derivative_route():
+    data = request.json
+    result = calculate_derivative(
+        expression=data['expression'],
+        point=data.get('point')
+    )
+    return jsonify(result)
+
+@app.route('/calculate_integral', methods=['POST'])
+def calculate_integral_route():
+    data = request.json
+    result = calculate_integral(
+        expression=data['expression'],
+        lower_bound=data.get('lower_bound'),
+        upper_bound=data.get('upper_bound')
+    )
+    return jsonify(result)
+
+@app.route('/calculate_limit', methods=['POST'])
+def calculate_limit_route():
+    data = request.json
+    result = calculate_limit(
+        expression=data['expression'],
+        point=data.get('point'),
+        direction=data.get('direction')
+    )
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True)

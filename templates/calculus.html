@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Calculus Calculator</h2>
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="calculusTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="derivative-tab" data-toggle="tab" href="#derivative" role="tab">Derivative</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="integral-tab" data-toggle="tab" href="#integral" role="tab">Integral</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="limit-tab" data-toggle="tab" href="#limit" role="tab">Limit</a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3" id="calculusTabContent">
+        <!-- Derivative Calculator -->
+        <div class="tab-pane fade show active" id="derivative" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Derivative Calculator</h5>
+                    <form id="derivativeForm">
+                        <div class="form-group">
+                            <label for="derivativeExpression">Expression (in terms of x)</label>
+                            <input type="text" class="form-control" id="derivativeExpression" placeholder="e.g., x^2 + 2*x + 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="derivativePoint">Evaluate at point (optional)</label>
+                            <input type="number" class="form-control" id="derivativePoint" placeholder="Enter a number">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate</button>
+                    </form>
+                    <div id="derivativeResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integral Calculator -->
+        <div class="tab-pane fade" id="integral" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Integral Calculator</h5>
+                    <form id="integralForm">
+                        <div class="form-group">
+                            <label for="integralExpression">Expression (in terms of x)</label>
+                            <input type="text" class="form-control" id="integralExpression" placeholder="e.g., 2*x + 1">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="lowerBound">Lower Bound (optional)</label>
+                                <input type="number" class="form-control" id="lowerBound">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="upperBound">Upper Bound (optional)</label>
+                                <input type="number" class="form-control" id="upperBound">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate</button>
+                    </form>
+                    <div id="integralResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Limit Calculator -->
+        <div class="tab-pane fade" id="limit" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Limit Calculator</h5>
+                    <form id="limitForm">
+                        <div class="form-group">
+                            <label for="limitExpression">Expression (in terms of x)</label>
+                            <input type="text" class="form-control" id="limitExpression" placeholder="e.g., (x^2 - 1)/(x - 1)">
+                        </div>
+                        <div class="form-group">
+                            <label for="limitPoint">Approaching Point</label>
+                            <input type="number" class="form-control" id="limitPoint" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="direction">Direction</label>
+                            <select class="form-control" id="direction">
+                                <option value="">Both sides</option>
+                                <option value="left">Left</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calculate</button>
+                    </form>
+                    <div id="limitResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('derivativeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const expression = document.getElementById('derivativeExpression').value;
+    const point = document.getElementById('derivativePoint').value;
+    
+    const response = await fetch('/calculate_derivative', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            expression: expression,
+            point: point || null
+        }),
+    });
+    
+    const result = await response.json();
+    const resultDiv = document.getElementById('derivativeResult');
+    if (result.error) {
+        resultDiv.innerHTML = `<div class="alert alert-danger">${result.error}</div>`;
+    } else {
+        let html = `<div class="alert alert-success">Derivative: ${result.derivative}`;
+        if (result.point_value !== undefined) {
+            html += `<br>Value at point ${point}: ${result.point_value}`;
+        }
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    }
+});
+
+document.getElementById('integralForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const expression = document.getElementById('integralExpression').value;
+    const lowerBound = document.getElementById('lowerBound').value;
+    const upperBound = document.getElementById('upperBound').value;
+    
+    const response = await fetch('/calculate_integral', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            expression: expression,
+            lower_bound: lowerBound || null,
+            upper_bound: upperBound || null
+        }),
+    });
+    
+    const result = await response.json();
+    const resultDiv = document.getElementById('integralResult');
+    if (result.error) {
+        resultDiv.innerHTML = `<div class="alert alert-danger">${result.error}</div>`;
+    } else {
+        let html = `<div class="alert alert-success">Integral: ${result.integral}`;
+        if (result.definite_integral !== undefined) {
+            html += `<br>Definite Integral: ${result.definite_integral}`;
+        }
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    }
+});
+
+document.getElementById('limitForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const expression = document.getElementById('limitExpression').value;
+    const point = document.getElementById('limitPoint').value;
+    const direction = document.getElementById('direction').value;
+    
+    const response = await fetch('/calculate_limit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            expression: expression,
+            point: parseFloat(point),
+            direction: direction || null
+        }),
+    });
+    
+    const result = await response.json();
+    const resultDiv = document.getElementById('limitResult');
+    if (result.error) {
+        resultDiv.innerHTML = `<div class="alert alert-danger">${result.error}</div>`;
+    } else {
+        resultDiv.innerHTML = `<div class="alert alert-success">Limit: ${result.limit}</div>`;
+    }
+});
+</script>
+{% endblock %}
