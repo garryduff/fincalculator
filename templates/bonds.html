@@ -1,63 +1,274 @@
 {% extends "base.html" %}
-{% block title %}Bond Calculator{% endblock %}
+{% block title %}Bond Calculators{% endblock %}
 {% block content %}
 <div class="container mt-5">
-    <h2>Bond Calculator</h2>
-    <div class="card">
-        <div class="card-body">
-            <form id="bondForm">
-                <div class="form-group">
-                    <label for="face_value">Face Value</label>
-                    <input type="number" step="0.01" class="form-control" id="face_value" required>
+    <h2>Bond Calculators</h2>
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="bondTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="pv-tab" data-bs-toggle="tab" href="#pv" role="tab">Present/Future Value</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="zero-tab" data-bs-toggle="tab" href="#zero" role="tab">Zero Coupon Bonds</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="coupon-tab" data-bs-toggle="tab" href="#coupon" role="tab">Coupon Bonds</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="perpetuity-tab" data-bs-toggle="tab" href="#perpetuity" role="tab">Perpetuities</a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="bondTabContent">
+        <!-- Present/Future Value Calculator -->
+        <div class="tab-pane fade show active" id="pv" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Present/Future Value Calculator</h3>
+                    <form id="pvForm">
+                        <div class="form-group">
+                            <label>Calculation Type</label>
+                            <select class="form-control" id="pvCalculationType">
+                                <option value="future">Calculate Future Value</option>
+                                <option value="present">Calculate Present Value</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="valueLabel">Present Value</label>
+                            <input type="number" step="0.01" class="form-control" id="value" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="pvInterestRate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Years</label>
+                            <input type="number" step="1" class="form-control" id="pvYears" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Calculate</button>
+                    </form>
+                    <div id="pvResult" class="mt-3"></div>
                 </div>
-                <div class="form-group">
-                    <label for="coupon_rate">Coupon Rate (%)</label>
-                    <input type="number" step="0.01" class="form-control" id="coupon_rate" required>
+            </div>
+        </div>
+
+        <!-- Zero Coupon Bond Calculator -->
+        <div class="tab-pane fade" id="zero" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Zero Coupon Bond Calculator</h3>
+                    <form id="zeroForm">
+                        <div class="form-group">
+                            <label>Face Value</label>
+                            <input type="number" step="0.01" class="form-control" id="zeroFaceValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Years to Maturity</label>
+                            <input type="number" step="1" class="form-control" id="zeroYearsToMaturity" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="zeroInterestRate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Calculate Price</button>
+                    </form>
+                    <div id="zeroResult" class="mt-3"></div>
                 </div>
-                <div class="form-group">
-                    <label for="years_to_maturity">Years to Maturity</label>
-                    <input type="number" step="0.01" class="form-control" id="years_to_maturity" required>
+            </div>
+        </div>
+
+        <!-- Coupon Bond Calculator -->
+        <div class="tab-pane fade" id="coupon" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Coupon Bond Calculator</h3>
+                    <form id="couponForm">
+                        <div class="form-group">
+                            <label>Face Value</label>
+                            <input type="number" step="0.01" class="form-control" id="couponFaceValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Coupon Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="couponRate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Years to Maturity</label>
+                            <input type="number" step="1" class="form-control" id="couponYearsToMaturity" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Payments Per Year</label>
+                            <select class="form-control" id="paymentsPerYear">
+                                <option value="1">Annual</option>
+                                <option value="2">Semi-Annual</option>
+                                <option value="4">Quarterly</option>
+                                <option value="12">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Market Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="couponInterestRate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Calculate Price</button>
+                    </form>
+                    <div id="couponResult" class="mt-3"></div>
                 </div>
-                <div class="form-group">
-                    <label for="market_rate">Market Rate (%)</label>
-                    <input type="number" step="0.01" class="form-control" id="market_rate" required>
+            </div>
+        </div>
+
+        <!-- Perpetuity Calculator -->
+        <div class="tab-pane fade" id="perpetuity" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Perpetuity Calculator</h3>
+                    <form id="perpetuityForm">
+                        <div class="form-group">
+                            <label>Annual Coupon Payment</label>
+                            <input type="number" step="0.01" class="form-control" id="perpetuityCouponPayment" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" id="perpetuityInterestRate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Calculate Price</button>
+                    </form>
+                    <div id="perpetuityResult" class="mt-3"></div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Calculate Bond Value</button>
-            </form>
-            <div id="result" class="mt-3"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-document.getElementById('bondForm').addEventListener('submit', async function(e) {
+// Present/Future Value Calculator
+document.getElementById('pvCalculationType').addEventListener('change', function() {
+    const valueLabel = document.getElementById('valueLabel');
+    valueLabel.textContent = this.value === 'future' ? 'Present Value' : 'Future Value';
+});
+
+document.getElementById('pvForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const formData = {
-        face_value: parseFloat(document.getElementById('face_value').value),
-        coupon_rate: parseFloat(document.getElementById('coupon_rate').value) / 100,
-        years_to_maturity: parseFloat(document.getElementById('years_to_maturity').value),
-        market_rate: parseFloat(document.getElementById('market_rate').value) / 100
-    };
+    const type = document.getElementById('pvCalculationType').value;
+    const value = parseFloat(document.getElementById('value').value);
+    const interestRate = parseFloat(document.getElementById('pvInterestRate').value) / 100;
+    const years = parseInt(document.getElementById('pvYears').value);
 
     try {
-        const response = await fetch('/calculate_bond', {
+        const response = await fetch('/calculate_pv_fv', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, value, interest_rate: interestRate, years })
         });
         const data = await response.json();
         if (data.error) {
-            document.getElementById('result').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            document.getElementById('pvResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
         } else {
-            document.getElementById('result').innerHTML = `
+            document.getElementById('pvResult').innerHTML = `
                 <div class="alert alert-success">
-                    <h4>Bond Value: $${data.bond_value}</h4>
+                    <h4>${type === 'future' ? 'Future' : 'Present'} Value: $${data.result.toFixed(2)}</h4>
                 </div>`;
         }
     } catch (error) {
-        document.getElementById('result').innerHTML = `<div class="alert alert-danger">Error calculating bond value</div>`;
+        document.getElementById('pvResult').innerHTML = `<div class="alert alert-danger">Error in calculation</div>`;
+    }
+});
+
+// Zero Coupon Bond Calculator
+document.getElementById('zeroForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const faceValue = parseFloat(document.getElementById('zeroFaceValue').value);
+    const yearsToMaturity = parseInt(document.getElementById('zeroYearsToMaturity').value);
+    const interestRate = parseFloat(document.getElementById('zeroInterestRate').value) / 100;
+
+    try {
+        const response = await fetch('/calculate_zero_coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                face_value: faceValue,
+                years_to_maturity: yearsToMaturity,
+                interest_rate: interestRate
+            })
+        });
+        const data = await response.json();
+        if (data.error) {
+            document.getElementById('zeroResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+            document.getElementById('zeroResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h4>Bond Price: $${data.price.toFixed(2)}</h4>
+                    <h4>Yield to Maturity: ${(data.ytm * 100).toFixed(2)}%</h4>
+                </div>`;
+        }
+    } catch (error) {
+        document.getElementById('zeroResult').innerHTML = `<div class="alert alert-danger">Error in calculation</div>`;
+    }
+});
+
+// Coupon Bond Calculator
+document.getElementById('couponForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const faceValue = parseFloat(document.getElementById('couponFaceValue').value);
+    const couponRate = parseFloat(document.getElementById('couponRate').value) / 100;
+    const yearsToMaturity = parseInt(document.getElementById('couponYearsToMaturity').value);
+    const paymentsPerYear = parseInt(document.getElementById('paymentsPerYear').value);
+    const interestRate = parseFloat(document.getElementById('couponInterestRate').value) / 100;
+
+    try {
+        const response = await fetch('/calculate_coupon_bond', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                face_value: faceValue,
+                coupon_rate: couponRate,
+                years_to_maturity: yearsToMaturity,
+                payments_per_year: paymentsPerYear,
+                interest_rate: interestRate
+            })
+        });
+        const data = await response.json();
+        if (data.error) {
+            document.getElementById('couponResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+            document.getElementById('couponResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h4>Bond Price: $${data.price.toFixed(2)}</h4>
+                    <h4>Yield to Maturity: ${(data.ytm * 100).toFixed(2)}%</h4>
+                </div>`;
+        }
+    } catch (error) {
+        document.getElementById('couponResult').innerHTML = `<div class="alert alert-danger">Error in calculation</div>`;
+    }
+});
+
+// Perpetuity Calculator
+document.getElementById('perpetuityForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const couponPayment = parseFloat(document.getElementById('perpetuityCouponPayment').value);
+    const interestRate = parseFloat(document.getElementById('perpetuityInterestRate').value) / 100;
+
+    try {
+        const response = await fetch('/calculate_perpetuity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                coupon_payment: couponPayment,
+                interest_rate: interestRate
+            })
+        });
+        const data = await response.json();
+        if (data.error) {
+            document.getElementById('perpetuityResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+            document.getElementById('perpetuityResult').innerHTML = `
+                <div class="alert alert-success">
+                    <h4>Perpetuity Price: $${data.price.toFixed(2)}</h4>
+                    <h4>Yield to Maturity: ${(data.ytm * 100).toFixed(2)}%</h4>
+                </div>`;
+        }
+    } catch (error) {
+        document.getElementById('perpetuityResult').innerHTML = `<div class="alert alert-danger">Error in calculation</div>`;
     }
 });
 </script>

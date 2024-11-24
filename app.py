@@ -165,5 +165,100 @@ def portfolio_volatility():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/calculate_pv_fv', methods=['POST'])
+def calculate_pv_fv():
+    data = request.get_json()
+    try:
+        value = float(data['value'])
+        interest_rate = float(data['interest_rate'])
+        years = int(data['years'])
+        calc_type = data['type']
+
+        if calc_type == 'future':
+            result = value * (1 + interest_rate) ** years
+        else:  # present value
+            result = value / ((1 + interest_rate) ** years)
+
+        return jsonify({'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_zero_coupon', methods=['POST'])
+def calculate_zero_coupon():
+    data = request.get_json()
+    try:
+        face_value = float(data['face_value'])
+        years_to_maturity = int(data['years_to_maturity'])
+        interest_rate = float(data['interest_rate'])
+
+        # Calculate price
+        price = face_value / ((1 + interest_rate) ** years_to_maturity)
+        
+        # Calculate YTM (same as interest rate for zero coupon)
+        ytm = interest_rate
+
+        return jsonify({
+            'price': price,
+            'ytm': ytm
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_coupon_bond', methods=['POST'])
+def calculate_coupon_bond():
+    data = request.get_json()
+    try:
+        face_value = float(data['face_value'])
+        coupon_rate = float(data['coupon_rate'])
+        years_to_maturity = int(data['years_to_maturity'])
+        payments_per_year = int(data['payments_per_year'])
+        interest_rate = float(data['interest_rate'])
+
+        # Calculate periodic values
+        periodic_rate = interest_rate / payments_per_year
+        total_periods = years_to_maturity * payments_per_year
+        coupon_payment = (face_value * coupon_rate) / payments_per_year
+
+        # Calculate present value of coupon payments
+        pv_coupons = 0
+        for t in range(1, total_periods + 1):
+            pv_coupons += coupon_payment / ((1 + periodic_rate) ** t)
+
+        # Calculate present value of face value
+        pv_face_value = face_value / ((1 + periodic_rate) ** total_periods)
+
+        # Total bond price
+        price = pv_coupons + pv_face_value
+
+        # Calculate YTM (simplified - using input rate)
+        ytm = interest_rate
+
+        return jsonify({
+            'price': price,
+            'ytm': ytm
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_perpetuity', methods=['POST'])
+def calculate_perpetuity():
+    data = request.get_json()
+    try:
+        coupon_payment = float(data['coupon_payment'])
+        interest_rate = float(data['interest_rate'])
+
+        # Calculate perpetuity price
+        price = coupon_payment / interest_rate
+
+        # YTM is the same as interest rate
+        ytm = interest_rate
+
+        return jsonify({
+            'price': price,
+            'ytm': ytm
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
