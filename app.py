@@ -6,6 +6,26 @@ from scipy.stats import norm
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/options')
+def options():
+    return render_template('options.html')
+
+@app.route('/bonds')
+def bonds():
+    return render_template('bonds.html')
+
+@app.route('/stocks')
+def stocks():
+    return render_template('stocks.html')
+
+@app.route('/portfolio')
+def portfolio():
+    return render_template('portfolio.html')
+
 def black_scholes_call(S, K, T, r, sigma):
     """
     Calculate Black-Scholes Call Option Price
@@ -80,10 +100,6 @@ def calculate_portfolio_volatility(weights, volatilities, correlations):
     
     # Return portfolio volatility (standard deviation)
     return np.sqrt(portfolio_variance)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 @app.route('/calculate_option', methods=['POST'])
 def calculate_option():
