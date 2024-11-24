@@ -8,6 +8,11 @@ from bond_calculators import (
     calculate_duration,
     estimate_price_change
 )
+from calculus_calculators import (
+    calculate_derivative,
+    calculate_integral,
+    calculate_limit
+)
 
 app = Flask(__name__)
 CORS(app)
