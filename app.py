@@ -2,6 +2,12 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import numpy as np
 from scipy.stats import norm
+from bond_calculators import (
+    calculate_bond_price,
+    find_yield_by_interpolation,
+    calculate_duration,
+    estimate_price_change
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -257,6 +263,62 @@ def calculate_perpetuity():
             'price': price,
             'ytm': ytm
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_yield', methods=['POST'])
+def calculate_yield():
+    data = request.get_json()
+    try:
+        face_value = float(data['face_value'])
+        coupon_rate = float(data['coupon_rate'])
+        years_to_maturity = float(data['years_to_maturity'])
+        current_price = float(data['current_price'])
+        payments_per_year = int(data.get('payments_per_year', 1))
+
+        ytm = find_yield_by_interpolation(
+            face_value=face_value,
+            coupon_rate=coupon_rate,
+            years_to_maturity=years_to_maturity,
+            current_price=current_price,
+            payments_per_year=payments_per_year
+        )
+
+        return jsonify({'yield': ytm})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/calculate_duration', methods=['POST'])
+def calculate_bond_duration():
+    data = request.get_json()
+    try:
+        face_value = float(data['face_value'])
+        coupon_rate = float(data['coupon_rate'])
+        years_to_maturity = float(data['years_to_maturity'])
+        yield_rate = float(data['yield_rate'])
+        payments_per_year = int(data.get('payments_per_year', 1))
+
+        durations = calculate_duration(
+            face_value=face_value,
+            coupon_rate=coupon_rate,
+            years_to_maturity=years_to_maturity,
+            yield_rate=yield_rate,
+            payments_per_year=payments_per_year
+        )
+
+        return jsonify(durations)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/estimate_price_change', methods=['POST'])
+def calculate_price_change():
+    data = request.get_json()
+    try:
+        duration = float(data['duration'])
+        yield_change = float(data['yield_change'])
+
+        price_change = estimate_price_change(duration, yield_change)
+        return jsonify({'price_change': price_change})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
