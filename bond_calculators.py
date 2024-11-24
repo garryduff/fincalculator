@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Tuple, Union, List
+from typing import Tuple, List, Dict
 
 class Bond:
     """Base class for different types of bonds"""
@@ -162,3 +162,79 @@ class Perpetuity(Bond):
             Yield to maturity (as decimal)
         """
         return self.coupon_payment / price
+
+def calculate_bond_price(face_value: float, coupon_rate: float, years_to_maturity: float,
+                        yield_rate: float, payments_per_year: int = 1) -> float:
+    """Calculate the price of a coupon bond given its characteristics and yield rate."""
+    coupon_payment = face_value * coupon_rate / payments_per_year
+    total_payments = int(years_to_maturity * payments_per_year)
+    periodic_yield = yield_rate / payments_per_year
+    
+    coupon_pv = 0
+    for t in range(1, total_payments + 1):
+        coupon_pv += coupon_payment / (1 + periodic_yield) ** t
+        
+    face_value_pv = face_value / (1 + periodic_yield) ** total_payments
+    
+    return coupon_pv + face_value_pv
+
+def find_yield_by_interpolation(face_value: float, coupon_rate: float, 
+                              years_to_maturity: float, current_price: float,
+                              payments_per_year: int = 1,
+                              max_iterations: int = 10,
+                              tolerance: float = 0.0001) -> float:
+    """Find yield to maturity using linear interpolation method."""
+    r_low = 0.0001
+    r_high = 0.5
+    
+    for _ in range(max_iterations):
+        p_low = calculate_bond_price(face_value, coupon_rate, years_to_maturity, 
+                                   r_low, payments_per_year)
+        p_high = calculate_bond_price(face_value, coupon_rate, years_to_maturity, 
+                                    r_high, payments_per_year)
+        
+        r_new = r_low + (current_price - p_low) * (r_high - r_low) / (p_high - p_low)
+        p_new = calculate_bond_price(face_value, coupon_rate, years_to_maturity, 
+                                   r_new, payments_per_year)
+        
+        if abs(p_new - current_price) < tolerance:
+            return r_new
+            
+        if p_new > current_price:
+            r_low = r_new
+        else:
+            r_high = r_new
+            
+    return r_new
+
+def calculate_duration(face_value: float, coupon_rate: float, years_to_maturity: float,
+                      yield_rate: float, payments_per_year: int = 1) -> Dict[str, float]:
+    """Calculate both Macaulay and Modified Duration for a bond."""
+    coupon_payment = face_value * coupon_rate / payments_per_year
+    periodic_yield = yield_rate / payments_per_year
+    total_payments = int(years_to_maturity * payments_per_year)
+    
+    pv_sum = 0
+    weighted_pv_sum = 0
+    
+    for t in range(1, total_payments + 1):
+        time_years = t / payments_per_year
+        pv = coupon_payment / (1 + periodic_yield) ** t
+        pv_sum += pv
+        weighted_pv_sum += pv * time_years
+    
+    pv_face = face_value / (1 + periodic_yield) ** total_payments
+    pv_sum += pv_face
+    weighted_pv_sum += pv_face * years_to_maturity
+    
+    macaulay_duration = weighted_pv_sum / pv_sum
+    modified_duration = macaulay_duration / (1 + periodic_yield)
+    
+    return {
+        "macaulay_duration": macaulay_duration,
+        "modified_duration": modified_duration
+    }
+
+def estimate_price_change(duration: float, yield_change: float) -> float:
+    """Estimate percentage price change using duration."""
+    return -duration * yield_change * 100
